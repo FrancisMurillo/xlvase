@@ -59,10 +59,28 @@ Public Function FindTestMethods(Module As VBComponent) As Variant
     FindTestMethods = Methods
 End Function
 
+'# Runs a test method, this assumes just it is a sub with no parameters.
+'# This also encloses it in a block for protection
+'@ Return: A 2-tuple consisting of a boolean indicating success and a string indicating the assertion where it failed
+Public Function RunTestMethod(Book As Workbook, ModuleName As String, MethodName As String) As Variant
+On Error GoTo ErrHandler:
+    Application.Run Book.Name & "!" & ModuleName & "." & MethodName
+ErrHandler:
+    Err.Clear
+
+    Dim Tuple As Variant
+    Tuple = Array(VaseAssert.TestResult, VaseAssert.FirstFailedTestMethod)
+    RunTestMethod = Tuple
+End Function
 
 '=======================
 '-- Helper Functions  --
 '=======================
+
+'# Clears the intermediate screen
+Public Sub ClearScreen()
+    Application.SendKeys "^g ^a {DEL}"
+End Sub
 
 '# Determines if a string is in an array using the like operator instead of equality
 '@ Param: Patterns > An array of strings, not necessarily zero-based
