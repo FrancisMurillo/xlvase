@@ -9,6 +9,79 @@ Public Const METHOD_HEADER_PATTERN As String = _
 '- Internal Functions  -
 '=======================
 
+'# Run the test suites with the correct options
+'@ Return: A tuple of reporting the test execution
+Public Function RunVaseSuite(VaseBook As Workbook, _
+        Optional Verbose As Boolean = True) As Variant
+    If Verbose Then Debug.Print "" ' Newline
+    If Verbose Then Debug.Print "Finding test modules"
+    Dim Book As Workbook
+    Dim TestMethodCount As Long, TestMethodSuccessCount As Long
+    Dim TestModuleCount As Long, TestModuleSuccessCount As Long
+    Dim TestMethodLocalPassCount As Long, TestMethodLocalTotalCount As Long
+    Dim TModules As Variant, TModule As Variant, TMethods As Variant, TMethod As Variant
+    Dim Module As VBComponent
+    Dim TestResult As Variant
+    Set Book = ActiveWorkbook ' Just in case I want to segregate it again
+    TModules = FindTestModules(VaseBook)
+    
+    TestMethodCount = 0
+    TestMethodSuccessCount = 0
+    TestModuleCount = 0
+    TestModuleSuccessCount = 0
+    
+    For Each TModule In TModules
+        If Verbose Then Debug.Print "* " & TModule.Name
+        If Verbose Then Debug.Print "=============="
+        TestMethodLocalPassCount = 0
+        
+        Set Module = TModule ' Just type casting it
+        TMethods = FindTestMethods(Module)
+        For Each TMethod In TMethods
+            VaseAssert.InitAssert
+            TestResult = RunTestMethod(VaseBook, TModule.Name, CStr(TMethod))
+            If TestResult(0) Then
+                If Verbose Then Debug.Print vbTab & "+ " & TMethod
+                TestMethodLocalPassCount = TestMethodLocalPassCount + 1
+            Else
+                If Verbose Then Debug.Print vbTab & "- " & TMethod & " >> " & TestResult(1)
+            End If
+        Next
+        TestMethodLocalTotalCount = UBound(TMethods) + 1
+        TestMethodCount = TestMethodCount + TestMethodLocalTotalCount
+        TestMethodSuccessCount = TestMethodSuccessCount + TestMethodLocalPassCount
+        
+        TestModuleCount = TestModuleCount + 1
+        If Verbose And TestMethodLocalTotalCount > 0 Then Debug.Print "-------"  ' Dashes if there was an test method run
+        If TestMethodLocalTotalCount = 0 Then
+            If Verbose Then Debug.Print "** No test cases to run here"
+            TestModuleSuccessCount = TestModuleSuccessCount + 1
+        ElseIf TestMethodLocalPassCount = TestMethodLocalTotalCount Then
+            If Verbose Then Debug.Print "*+ Total: " & CStr(TestMethodLocalTotalCount)
+            TestModuleSuccessCount = TestModuleSuccessCount + 1
+        Else
+            If Verbose Then Debug.Print "*+ Total: " & CStr(TestMethodLocalTotalCount) & _
+                                " Passed: " & TestMethodLocalPassCount & _
+                                " Failed: " & (TestMethodLocalTotalCount - TestMethodLocalPassCount)
+        End If
+        
+        If Verbose Then Debug.Print "" ' Emptyline
+    Next
+    
+    If Verbose And TestModuleCount > 0 Then Debug.Print "--------------"  ' Dashes if there was an test method run
+    If TestModuleCount = 0 Then
+        If Verbose Then Debug.Print _
+            "No test modules were found. Vase is full of air."
+    ElseIf TestModuleCount = TestModuleSuccessCount Then
+        If Verbose Then Debug.Print _
+            "+ Modules: " & CStr(TestModuleCount) & " Methods: " & CStr(TestMethodCount)
+    Else
+        If Verbose Then Debug.Print _
+            "- Modules: " & CStr(TestModuleCount) & " Passed: " & CStr(TestModuleSuccessCount) & " Failed: " & CStr(TestModuleCount - TestModuleSuccessCount)
+    End If
+        
+End Function
+
 '# This finds the modules that are deemed as test modules
 Public Function FindTestModules(Book As Workbook) As Variant
     Dim Module As VBComponent, Modules As Variant, Index As Integer
@@ -80,6 +153,7 @@ End Function
 '# Clears the intermediate screen
 Public Sub ClearScreen()
     Application.SendKeys "^g ^a {DEL}"
+    DoEvents
 End Sub
 
 '# Determines if a string is in an array using the like operator instead of equality

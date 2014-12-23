@@ -33,17 +33,17 @@ End Sub
 
 '# Assert if condition is true
 Public Sub AssertTrue(Cond As Boolean, Optional Message As String = "")
-    Assert_ Cond, Message:=Message
+    Assert_ Cond, Message:=Message, AssertName:="AssertTrue"
 End Sub
 
 '# Assert condition is false
 Public Sub AssertFalse(Cond As Boolean, Optional Message As String = "")
-    Assert_ Not Cond, Message:=Message
+    Assert_ Not Cond, Message:=Message, AssertName:="AssertFalse"
 End Sub
 
 '# Assert two variables are equal
 Public Sub AssertEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
-    Assert_ Equal_(LeftVal, RightVal), Message:=Message
+    Assert_ Equal_(LeftVal, RightVal), Message:=Message, AssertName:="AssertEqual"
 End Sub
 
 Private Function Equal_(LeftVal As Variant, RightVal As Variant) As Boolean
