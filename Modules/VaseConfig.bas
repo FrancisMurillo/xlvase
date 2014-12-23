@@ -7,4 +7,4 @@ Public Const TEST_MODULE_PATTERN As String = "Test*"
 Public Const TEST_METHOD_PATTERN As String = "Test*"
 
 '# Delimiters for string splitting
-Public Const DELIMITER As String = ";"
+Public Const Delimiter As String = ";"

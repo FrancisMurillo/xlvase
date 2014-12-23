@@ -12,13 +12,15 @@ Public Const METHOD_HEADER_PATTERN As String = _
 '# Run the test suites with the correct options
 '@ Return: A tuple of reporting the test execution
 Public Function RunVaseSuite(VaseBook As Workbook, _
-        Optional Verbose As Boolean = True) As Variant
+        Optional Verbose As Boolean = True, _
+        Optional ShowOnlyFailed As Boolean = False) As Variant
     If Verbose Then Debug.Print "" ' Newline
     If Verbose Then Debug.Print "Finding test modules"
     Dim Book As Workbook
     Dim TestMethodCount As Long, TestMethodSuccessCount As Long
     Dim TestModuleCount As Long, TestModuleSuccessCount As Long
     Dim TestMethodLocalPassCount As Long, TestMethodLocalTotalCount As Long
+    Dim TestMethodFailedCol As New Collection, TestMethodFailedArr As Variant
     Dim TModules As Variant, TModule As Variant, TMethods As Variant, TMethod As Variant
     Dim Module As VBComponent
     Dim TestResult As Variant
@@ -45,6 +47,7 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
                 TestMethodLocalPassCount = TestMethodLocalPassCount + 1
             Else
                 If Verbose Then Debug.Print vbTab & "- " & TMethod & " >> " & TestResult(1)
+                TestMethodFailedCol.Add TModule.Name & "." & TMethod
             End If
         Next
         TestMethodLocalTotalCount = UBound(TMethods) + 1
@@ -61,25 +64,31 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
             TestModuleSuccessCount = TestModuleSuccessCount + 1
         Else
             If Verbose Then Debug.Print "*+ Total: " & CStr(TestMethodLocalTotalCount) & _
-                                " Passed: " & TestMethodLocalPassCount & _
-                                " Failed: " & (TestMethodLocalTotalCount - TestMethodLocalPassCount)
+                                " / Passed: " & TestMethodLocalPassCount & _
+                                " / Failed: " & (TestMethodLocalTotalCount - TestMethodLocalPassCount)
         End If
         
         If Verbose Then Debug.Print "" ' Emptyline
     Next
     
+    TestMethodFailedArr = ToArray(TestMethodFailedCol)
     If Verbose And TestModuleCount > 0 Then Debug.Print "--------------"  ' Dashes if there was an test method run
     If TestModuleCount = 0 Then
         If Verbose Then Debug.Print _
             "No test modules were found. Vase is full of air."
     ElseIf TestModuleCount = TestModuleSuccessCount Then
         If Verbose Then Debug.Print _
-            "+ Modules: " & CStr(TestModuleCount) & " Methods: " & CStr(TestMethodCount)
+            "+ Modules: " & CStr(TestModuleCount) & " / Methods: " & CStr(TestMethodCount)
     Else
         If Verbose Then Debug.Print _
-            "- Modules: " & CStr(TestModuleCount) & " Passed: " & CStr(TestModuleSuccessCount) & " Failed: " & CStr(TestModuleCount - TestModuleSuccessCount)
+            "- Modules: " & CStr(TestModuleCount) & " / Passed: " & CStr(TestModuleSuccessCount) & " / Failed: " & CStr(TestModuleCount - TestModuleSuccessCount) & vbCrLf & _
+            "- Methods: " & CStr(TestMethodCount) & " / Passed: " & CStr(TestMethodSuccessCount) & " / Failed: " & CStr(TestMethodCount - TestMethodSuccessCount) & vbCrLf & vbCrLf & _
+            "Failed Methods:" & vbCrLf & Join_(TestMethodFailedArr, vbCrLf, Prefix:="* ") & vbCrLf
     End If
-        
+    
+    Dim Tuple As Variant
+    Tuple = Array()
+    RunVaseSuite = Tuple
 End Function
 
 '# This finds the modules that are deemed as test modules
@@ -155,6 +164,41 @@ Public Sub ClearScreen()
     Application.SendKeys "^g ^a {DEL}"
     DoEvents
 End Sub
+
+'# Converts a collection to an array
+Public Function ToArray(Col As Collection) As Variant
+    If Col Is Nothing Then
+        ToArray = Array()
+        Exit Function
+    End If
+    
+    If Col.Count = 0 Then
+        ToArray = Array()
+        Exit Function
+    End If
+    
+    Dim Arr As Variant, Item As Variant, Index As Integer
+    Arr = Array()
+    ReDim Arr(0 To Col.Count - 1)
+    Index = 0
+    For Each Item In Col
+        Arr(Index) = Item
+        Index = Index + 1
+    Next
+    
+    ToArray = Arr
+End Function
+
+'# Joins an array assuming all entries are string
+Public Function Join_(Arr As Variant, Delimiter As String, Optional Prefix As String = "") As String
+    Dim StrArr() As String, Index As Integer
+    ReDim StrArr(0 To UBound(Arr))
+        
+    For Index = 0 To UBound(StrArr)
+        StrArr(Index) = Prefix & CStr(Arr(Index))
+    Next
+    Join_ = Join(StrArr, Delimiter)
+End Function
 
 '# Determines if a string is in an array using the like operator instead of equality
 '@ Param: Patterns > An array of strings, not necessarily zero-based
