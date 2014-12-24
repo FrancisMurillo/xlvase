@@ -6,5 +6,5 @@ Public Sub Initialize()
     References = Array( _
         "Microsoft Visual Basic for Applications Extensibility *")
     Modules = Array( _
-        "Vase", "VaseLib")
+        "Vase", "VaseLib", "VaseAssert", "VaseConfig")
 End Sub
