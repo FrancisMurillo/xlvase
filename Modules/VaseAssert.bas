@@ -2,12 +2,16 @@ Attribute VB_Name = "VaseAssert"
 '# This global variable determines if an assert method failed or passed
 Private gAssertion As Boolean
 Private gFirstFailed As String
+Private gFirstFailedMessage As String
 
 Public Property Get TestResult() As Boolean
     TestResult = gAssertion
 End Property
 Public Property Get FirstFailedTestMethod() As String
     FirstFailedTestMethod = gFirstFailed
+End Property
+Public Property Get FirstFailedTestMessage() As String
+    FirstFailedTestMessage = gFirstFailedMessage
 End Property
 
 '=======================
@@ -18,6 +22,7 @@ End Property
 Public Sub InitAssert()
     gAssertion = True
     gFirstFailed = ""
+    gFirstFailedMessage = ""
 End Sub
 
 
@@ -54,3 +59,29 @@ On Error Resume Next
     Equal_ = (LeftVal = RightVal) ' Mutates the error state if an error occurs here
     If PreClear Then Err.Clear ' If there was an previous error, do not clear it
 End Function
+
+'# Assert something is inside an array
+Public Sub AssertInArray(Elem As Variant, Arr As Variant, Optional Message As String = "")
+    Assert_ VaseLib.InArray(Elem, Arr), Message:=Message, AssertName:="AssertInArray"
+End Sub
+
+'# Assert array is of the correct size
+Public Sub AssertArraySize(Size As Long, Arr As Variant, Optional Message As String = "")
+    Assert_ Equal_(Size, UBound(Arr) + 1), Message:=Message, AssertName:="AssertArraySize"
+End Sub
+
+'# Assert array is of the correct size
+Public Sub AssertEmptyArray(Arr As Variant, Optional Message As String = "")
+    Assert_ Equal_(-1, UBound(Arr)), Message:=Message, AssertName:="AssertEmptyArray"
+End Sub
+
+'# Assert array elements are equal
+Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "")
+    Dim Tuple As Variant, ArrSize As Long
+    ArrSize = UBound(LeftArr) + 1
+    
+    AssertArraySize UBound(LeftArr) + 1, RightArr, Message:=Message
+    For Each Tuple In VaseLib.Zip(LeftArr, RightArr)
+        AssertEqual Tuple(0), Tuple(1), Message:=Message
+    Next
+End Sub

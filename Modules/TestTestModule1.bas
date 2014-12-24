@@ -1,15 +1,19 @@
 Attribute VB_Name = "TestTestModule1"
 Public Sub TestFailCompute()
-    AssertTrue False
+    VaseAssert.AssertTrue False
 End Sub
 
 Public Sub TestSuccessCompute()
-    AssertFalse False
+    VaseAssert.AssertFalse False
 End Sub
 
 Public Sub NotTested()
-    AssertTrue True
+    VaseAssert.AssertTrue True
 End Sub
 
 
-
+Public Sub TestUncaughtException()
+On Error Resume Next
+    'Not handled yet or will be
+    VaseAssert.AssertTrue 1 = "A"
+End Sub

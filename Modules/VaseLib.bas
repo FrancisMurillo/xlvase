@@ -148,10 +148,14 @@ Public Function RunTestMethod(Book As Workbook, ModuleName As String, MethodName
 On Error GoTo ErrHandler:
     Application.Run Book.Name & "!" & ModuleName & "." & MethodName
 ErrHandler:
+    Dim HasError As Boolean, Tuple As Variant
+    HasError = (Err.Number <> 0)
+    If HasError Then
+        Tuple = Array(False, "ExceptionRaised(" & Err.Number & "):  " & Err.Description)
+    Else
+        Tuple = Array(VaseAssert.TestResult, VaseAssert.FirstFailedTestMethod & ": " & VaseAssert.FirstFailedTestMessage)
+    End If
     Err.Clear
-
-    Dim Tuple As Variant
-    Tuple = Array(VaseAssert.TestResult, VaseAssert.FirstFailedTestMethod)
     RunTestMethod = Tuple
 End Function
 
@@ -164,6 +168,39 @@ Public Sub ClearScreen()
     Application.SendKeys "^g ^a {DEL}"
     DoEvents
 End Sub
+
+'# Simple zip of two arrays, returns an array of 2-tuples
+'# This assumes that arrays are zero-indexed
+Public Function Zip(LeftArr As Variant, RightArr As Variant) As Variant
+    If UBound(LeftArr) = -1 Or UBound(RightArr) = -1 Then
+        Zip = Array()
+        Exit Function
+    End If
+    
+    Dim ZipArr As Variant, Index As Integer
+    ZipArr = Array()
+    ReDim ZipArr(0 To IIf(UBound(LeftArr) > UBound(RightArr), UBound(RightArr), UBound(LeftArr))) ' Take minimum of the two
+
+    For Index = 0 To UBound(ZipArr)
+        ZipArr(Index) = Array(LeftArr(Index), RightArr(Index))
+    Next
+    Zip = ZipArr
+End Function
+
+'# Finds a value in an array of values, this assumes the elements can be matched using the equality operator
+Public Function InArray(Look As Variant, Arr As Variant) As Boolean
+    Dim Elem As Variant
+    InArray = False
+    
+    If UBound(Arr) = -1 Then Exit Function ' Nothing to do
+
+    For Each Elem In Arr
+        If Elem = Look Then
+            InArray = True
+            Exit Function
+        End If
+    Next
+End Function
 
 '# Converts a collection to an array
 Public Function ToArray(Col As Collection) As Variant
