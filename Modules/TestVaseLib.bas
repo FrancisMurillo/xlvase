@@ -16,6 +16,7 @@ On Error Resume Next
         "TestFakeMath", _
         "TestTestModule1", _
         "TestTestModule2", _
+        "TestVaseAssert", _
         "TestVaseLib")
     For Each TModule In TModules
         VaseAssert.AssertInArray TModule.Name, ExpectedModules

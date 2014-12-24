@@ -3,6 +3,7 @@ Attribute VB_Name = "VaseAssert"
 Private gAssertion As Boolean
 Private gFirstFailed As String
 Private gFirstFailedMessage As String
+Private gFirstFailedAssertMessage As String
 
 Private gTestCaseStarted As Boolean ' Defaults to False
 
@@ -14,6 +15,9 @@ Public Property Get FirstFailedTestMethod() As String
 End Property
 Public Property Get FirstFailedTestMessage() As String
     FirstFailedTestMessage = gFirstFailedMessage
+End Property
+Public Property Get FirstFailedTestAssertMessage() As String
+    FirstFailedTestAssertMessage = gFirstFailedAssertMessage
 End Property
 
 '=======================
@@ -34,26 +38,29 @@ Private Sub Assert_(Cond As Boolean, _
         Optional AssertName As String = "Assert", _
         Optional AssertFailMessage As String = "Assert Failed", _
         Optional Params As Variant = Empty) ' Name to avoid Debug.Assert conflict or confusion
-    gAssertion = gAssertion And Cond ' Update assertion variable
-    If Not Cond And gFirstFailed = "" Then ' Log the first fail condition for logging
-        gFirstFailed = AssertName
-    End If
-    
     If Not Vase.IsRunningTest Then ' Allow output for solo execution
         If Not gTestCaseStarted Then
             VaseLib.ClearScreen
             Debug.Print "Test Case Started"
             Debug.Print "---------------------"
             
-            gAssertion = Cond ' Reset main assertion result
+            InitAssert
             gTestCaseStarted = True
         End If
     
         If Cond Then
             Debug.Print "+ " & AssertName
         Else
-            Debug.Print "- " & AssertName & " >> " & AssertFailMessage
+            Debug.Print "- " & AssertName & " >> " & AssertFailMessage & _
+                IIf(Message <> "", " >> " & Message, "")
         End If
+    End If
+    
+    gAssertion = gAssertion And Cond ' Update assertion variable
+    If Not Cond And gFirstFailed = "" Then ' Log the first fail condition for logging
+        gFirstFailed = AssertName
+        gFirstFailedMessage = Message
+        gFirstFailedAssertMessage = AssertFailMessage
     End If
 End Sub
 
@@ -68,6 +75,11 @@ Public Sub Ping_()
     If Not Vase.IsRunningTest Then
         Debug.Print ""
         Debug.Print "Test Execution: " & IIf(gAssertion, "Passed", "Failed")
+        If Not gAssertion Then
+            Debug.Print "First Failed On: " & vbCrLf & "- " & gFirstFailed & " >> " & gFirstFailedAssertMessage & _
+                IIf(gFirstFailedMessage <> "", " >> " & gFirstFailedMessage, "")
+        End If
+        
         gTestCaseStarted = False
     End If
 End Sub
@@ -129,7 +141,7 @@ End Sub
 '# Assert something is inside an array
 Public Sub AssertInArray(Elem As Variant, Arr As Variant, Optional Message As String = "")
     Assert_ VaseLib.InArray(Elem, Arr), Message:=Message, AssertName:="AssertInArray", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not In " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(Elem) & " Not In " & ToSafeString(Arr)
 End Sub
 
 '# Assert array is of the correct size

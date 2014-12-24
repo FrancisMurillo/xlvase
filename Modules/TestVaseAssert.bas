@@ -6,7 +6,7 @@ Public Sub TestSoloExecutionPass()
 End Sub
 
 Public Sub TestSoloExecutionFailed()
-    VaseAssert.AssertFalse True ' Visual test
+    VaseAssert.AssertFalse True, "Sample Message" ' Visual test
     
     VaseAssert.Ping_
 End Sub

@@ -155,7 +155,7 @@ ErrHandler:
     Else
         Tuple = Array( _
                     VaseAssert.TestResult, _
-                    VaseAssert.FirstFailedTestMethod & _
+                    VaseAssert.FirstFailedTestMethod & " >> " & VaseAssert.FirstFailedTestAssertMessage & _
                         IIf(VaseAssert.FirstFailedTestMessage <> "", _
                             ": " & VaseAssert.FirstFailedTestMessage, "") _
                 )
