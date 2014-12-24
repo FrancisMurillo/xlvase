@@ -153,7 +153,12 @@ ErrHandler:
     If HasError Then
         Tuple = Array(False, "ExceptionRaised(" & Err.Number & "):  " & Err.Description)
     Else
-        Tuple = Array(VaseAssert.TestResult, VaseAssert.FirstFailedTestMethod & ": " & VaseAssert.FirstFailedTestMessage)
+        Tuple = Array( _
+                    VaseAssert.TestResult, _
+                    VaseAssert.FirstFailedTestMethod & _
+                        IIf(VaseAssert.FirstFailedTestMessage <> "", _
+                            ": " & VaseAssert.FirstFailedTestMessage, "") _
+                )
     End If
     Err.Clear
     RunTestMethod = Tuple
