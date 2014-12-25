@@ -27,10 +27,17 @@ Public PassImportModules As Variant ' Modules you want to ignore during import
 Public PassExceptImportModules As Variant ' Modules that are exempt from the ignore import filter
 
 Public Sub InitializeVariables()
-    IgnoreExportModules = Array("Chip*")
-    IgnoreExceptExportModules = Array("Sandbox", "ModuleIgnoreNot", "ChipInfo")
+    IgnoreExportModules = Array( _
+        "Chip*", "Wheat*", _
+        "ThisWorkbook", "Sheet*", _
+        "Sandbox")
+    IgnoreExceptExportModules = Array( _
+        "WheatConfig", _
+        "ChipInfo", "ChipInit", _
+        "Sandbox")
     
-    PassImportModules = Array("*Config", "Wheat*")
-    PassExceptImportModules = Array()
+    ' Same restriction as exporting, modify this when receiving updates or changes
+    PassImportModules = IgnoreExportModules
+    PassExceptImportModules = IgnoreExceptExportModules
 End Sub
 
