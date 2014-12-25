@@ -28,7 +28,7 @@ Public PassExceptImportModules As Variant ' Modules that are exempt from the ign
 
 Public Sub InitializeVariables()
     IgnoreExportModules = Array("Chip*")
-    IgnoreExceptExportModules = Array("Sandbox", "ModuleIgnoreNot")
+    IgnoreExceptExportModules = Array("Sandbox", "ModuleIgnoreNot", "ChipInfo")
     
     PassImportModules = Array("*Config", "Wheat*")
     PassExceptImportModules = Array()

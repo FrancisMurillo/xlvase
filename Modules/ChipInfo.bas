@@ -4,5 +4,5 @@ Public Sub WriteInfo()
         "Microsoft Visual Basic for Applications Extensibility *", _
         "Microsoft Scripting Runtime")
     ChipReadInfo.Modules = Array( _
-        "Wheat", "WheatLib", "WheatConfig")
+        "Vase", "VaseLib", "VaseAssert", "VaseConfig")
 End Sub
