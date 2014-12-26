@@ -39,9 +39,16 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
         
         Set Module = TModule ' Just type casting it
         TMethods = FindTestMethods(Module)
+        
+        ' Run setup method
+        If RunSetupMethod(VaseBook.Name, TModule.Name) Then
+                If Verbose Then Debug.Print "Setup method executed"
+        End If
+        
         For Each TMethod In TMethods
             VaseAssert.InitAssert
-            TestResult = RunTestMethod(VaseBook, TModule.Name, CStr(TMethod))
+                        
+            TestResult = RunTestMethod(VaseBook.Name, TModule.Name, CStr(TMethod))
             If TestResult(0) Then
                 If Verbose Then Debug.Print vbTab & "+ " & TMethod
                 TestMethodLocalPassCount = TestMethodLocalPassCount + 1
@@ -50,6 +57,12 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
                 TestMethodFailedCol.Add TModule.Name & "." & TMethod
             End If
         Next
+        
+        ' Run teardown method
+        If RunTeardownMethod(VaseBook.Name, TModule.Name) Then
+            If Verbose Then Debug.Print "Teardown method executed"
+        End If
+        
         TestMethodLocalTotalCount = UBound(TMethods) + 1
         TestMethodCount = TestMethodCount + TestMethodLocalTotalCount
         TestMethodSuccessCount = TestMethodSuccessCount + TestMethodLocalPassCount
@@ -89,6 +102,28 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
     Dim Tuple As Variant
     Tuple = Array()
     RunVaseSuite = Tuple
+End Function
+
+'# Runs a method using Application.Run, this returns true if the method was executed.
+Private Function RunMethod(BookName As String, ModuleName As String, MethodName As String)
+On Error GoTo ErrHandler:
+    RunMethod = True
+    Application.Run "'" & BookName & "'!" & ModuleName & "." & MethodName
+ErrHandler:
+    If Err.Number = 1004 Then ' Only clear the error when it is Application.Run error
+        RunMethod = False
+        Err.Clear
+    End If
+End Function
+
+'# Runs the default Setup method
+Private Function RunSetupMethod(BookName As String, ModuleName As String)
+    RunSetupMethod = RunMethod(BookName, ModuleName, VaseConfig.TEST_SETUP_METHOD_NAME)
+End Function
+
+'# Runs the default Teardown method
+Private Function RunTeardownMethod(BookName As String, ModuleName As String)
+    RunTeardownMethod = RunMethod(BookName, ModuleName, VaseConfig.TEST_TEARDOWN_METHOD_NAME)
 End Function
 
 '# This finds the modules that are deemed as test modules
@@ -144,9 +179,8 @@ End Function
 '# Runs a test method, this assumes just it is a sub with no parameters.
 '# This also encloses it in a block for protection
 '@ Return: A 2-tuple consisting of a boolean indicating success and a string indicating the assertion where it failed
-Public Function RunTestMethod(Book As Workbook, ModuleName As String, MethodName As String) As Variant
-On Error GoTo ErrHandler:
-    Application.Run Book.Name & "!" & ModuleName & "." & MethodName
+Public Function RunTestMethod(BookName As String, ModuleName As String, MethodName As String) As Variant
+    RunMethod BookName, ModuleName, MethodName
 ErrHandler:
     Dim HasError As Boolean, Tuple As Variant
     HasError = (Err.Number <> 0)

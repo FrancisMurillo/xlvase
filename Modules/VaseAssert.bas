@@ -121,7 +121,7 @@ Public Sub AssertGreaterThanOrEqual(LeftVal As Variant, RightVal As Variant, Opt
 End Sub
 
 '# Assert less than
-Public Sub AssertLess(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertLessThan(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
     Assert_ LessThan_(LeftVal, RightVal), Message:=Message, AssertName:="AssertLess", _
         AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not < " & ToSafeString(RightVal)
 End Sub
