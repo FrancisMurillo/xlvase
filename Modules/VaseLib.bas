@@ -53,7 +53,7 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
                 If Verbose Then Debug.Print vbTab & "+ " & TMethod
                 TestMethodLocalPassCount = TestMethodLocalPassCount + 1
             Else
-                If Verbose Then Debug.Print vbTab & "- " & TMethod & " >> " & TestResult(1)
+                If Verbose Then Debug.Print vbTab & "- " & TMethod & TestResult(1)
                 TestMethodFailedCol.Add TModule.Name & "." & TMethod
             End If
         Next
@@ -185,13 +185,29 @@ ErrHandler:
     Dim HasError As Boolean, Tuple As Variant
     HasError = (Err.Number <> 0)
     If HasError Then
-        Tuple = Array(False, "ExceptionRaised(" & Err.Number & "):  " & Err.Description)
+        Tuple = Array(False, vbCrLf & vbTab & "ExceptionRaised(" & Err.Number & "):  " & Err.Description)
     Else
+        Dim ErrorMessage As String
+        If VaseAssert.FirstFailedTestParentMethod = "" Then
+            ErrorMessage = _
+                vbCrLf & vbTab & "> " & VaseAssert.FirstFailedTestMethod & _
+                vbCrLf & vbTab & "-> " & VaseAssert.FirstFailedTestAssertMessage & _
+                IIf(VaseAssert.FirstFailedTestMessage <> "", _
+                vbCrLf & vbTab & "->> " & VaseAssert.FirstFailedTestMessage, "")
+        Else
+            ErrorMessage = _
+                vbCrLf & vbTab & "> " & VaseAssert.FirstFailedTestParentMethod & _
+                    "(" & VaseAssert.FirstFailedTestMethod & ")" & _
+                vbCrLf & vbTab & "-> " & VaseAssert.FirstFailedTestAssertMessage & _
+                IIf(VaseAssert.FirstFailedTestMessage <> "", _
+                vbCrLf & vbTab & "->> " & VaseAssert.FirstFailedTestMessage, "")
+        End If
+        
+        
+    
         Tuple = Array( _
                     VaseAssert.TestResult, _
-                    VaseAssert.FirstFailedTestMethod & " >> " & VaseAssert.FirstFailedTestAssertMessage & _
-                        IIf(VaseAssert.FirstFailedTestMessage <> "", _
-                            ": " & VaseAssert.FirstFailedTestMessage, "") _
+                    ErrorMessage _
                 )
     End If
     Err.Clear

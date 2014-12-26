@@ -4,6 +4,7 @@ Private gAssertion As Boolean
 Private gFirstFailed As String
 Private gFirstFailedMessage As String
 Private gFirstFailedAssertMessage As String
+Private gFirstFailedParent As String
 
 Private gTestCaseStarted As Boolean ' Defaults to False
 
@@ -18,6 +19,9 @@ Public Property Get FirstFailedTestMessage() As String
 End Property
 Public Property Get FirstFailedTestAssertMessage() As String
     FirstFailedTestAssertMessage = gFirstFailedAssertMessage
+End Property
+Public Property Get FirstFailedTestParentMethod() As String
+    FirstFailedTestParentMethod = gFirstFailedParent
 End Property
 
 '=======================
@@ -37,6 +41,7 @@ Private Sub Assert_(Cond As Boolean, _
         Optional Message As String = "", _
         Optional AssertName As String = "Assert", _
         Optional AssertFailMessage As String = "Assert Failed", _
+        Optional AssertParentName As String = "", _
         Optional Params As Variant = Empty) ' Name to avoid Debug.Assert conflict or confusion
     If Not Vase.IsRunningTest Then ' Allow output for solo execution
         If Not gTestCaseStarted Then
@@ -49,10 +54,21 @@ Private Sub Assert_(Cond As Boolean, _
         End If
     
         If Cond Then
-            Debug.Print "+ " & AssertName
+            If AssertParentName = "" Then
+                Debug.Print "+ " & AssertName
+            Else
+                Debug.Print "+ " & AssertParentName
+            End If
         Else
-            Debug.Print "- " & AssertName & " >> " & AssertFailMessage & _
-                IIf(Message <> "", " >> " & Message, "")
+            If AssertParentName = "" Then
+                Debug.Print "- " & AssertName & vbCrLf & _
+                            "-> " & AssertFailMessage & _
+                                IIf(Message <> "", vbCrLf & " ->> " & Message, "")
+            Else
+                Debug.Print "- " & AssertParentName & "(" & AssertName & ")" & vbCrLf & _
+                            "-> " & AssertFailMessage & _
+                                IIf(Message <> "", vbCrLf & " ->> " & Message, "")
+            End If
         End If
     End If
     
@@ -61,7 +77,21 @@ Private Sub Assert_(Cond As Boolean, _
         gFirstFailed = AssertName
         gFirstFailedMessage = Message
         gFirstFailedAssertMessage = AssertFailMessage
+        gFirstFailedParent = AssertParentName
     End If
+End Sub
+
+Private Sub Fail_(Optional Message As String = "", _
+        Optional AssertName As String = "Assert", _
+        Optional AssertFailMessage As String = "Assert Failed", _
+        Optional AssertParentName As String = "", _
+        Optional Params As Variant = Empty)
+    Assert_ False, _
+        Message:=Message, _
+        AssertName:=AssertName, _
+        AssertFailMessage:=AssertFailMessage, _
+        AssertParentName:=AssertParentName, _
+        Params:=Params
 End Sub
 
 '# Resets the test case flag
@@ -85,90 +115,122 @@ Public Sub Ping_()
 End Sub
 
 '# Assert if condition is true
-Public Sub AssertTrue(Cond As Boolean, Optional Message As String = "")
+Public Sub AssertTrue(Cond As Boolean, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Cond, Message:=Message, AssertName:="AssertTrue", _
-        AssertFailMessage:="Got False"
+        AssertFailMessage:="Got False", _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert condition is false
-Public Sub AssertFalse(Cond As Boolean, Optional Message As String = "")
+Public Sub AssertFalse(Cond As Boolean, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Not Cond, Message:=Message, AssertName:="AssertFalse", _
-        AssertFailMessage:="Got True"
+        AssertFailMessage:="Got True", _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert two variables are equal
-Public Sub AssertEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Equal_(LeftVal, RightVal), Message:=Message, AssertName:="AssertEqual", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " <> " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " <> " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert left variable is like the right variable
-Public Sub AssertLike(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertLike(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Like_(LeftVal, RightVal), Message:=Message, AssertName:="AssertLike", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not Like " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not Like " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert greater than
-Public Sub AssertGreaterThan(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertGreaterThan(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ GreaterThan_(LeftVal, RightVal), Message:=Message, AssertName:="AssertGreaterThan", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not > " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not > " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert greater than or equal
-Public Sub AssertGreaterThanOrEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertGreaterThanOrEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ GreaterThanOrEqual_(LeftVal, RightVal), Message:=Message, AssertName:="AssertGreaterThanOrEqual", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not >= " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not >= " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert less than
-Public Sub AssertLessThan(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertLessThan(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ LessThan_(LeftVal, RightVal), Message:=Message, AssertName:="AssertLess", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not < " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not < " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert less than or equal
-Public Sub AssertLessThanOrEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertLessThanOrEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ LessThanOrEqual_(LeftVal, RightVal), Message:=Message, AssertName:="AssertLessThanOrEqual", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not <= " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " Not <= " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert not equal
-Public Sub AssertNotEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "")
+Public Sub AssertNotEqual(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Not Equal_(LeftVal, RightVal), Message:=Message, AssertName:="AssertNotEqual", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " = " & ToSafeString(RightVal)
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " = " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert something is inside an array
-Public Sub AssertInArray(Elem As Variant, Arr As Variant, Optional Message As String = "")
+Public Sub AssertInArray(Elem As Variant, Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ VaseLib.InArray(Elem, Arr), Message:=Message, AssertName:="AssertInArray", _
-        AssertFailMessage:="Got " & ToSafeString(Elem) & " Not In " & ToSafeString(Arr)
+        AssertFailMessage:="Got " & ToSafeString(Elem) & " Not In " & ToSafeString(Arr), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert array is of the correct size
-Public Sub AssertArraySize(Size As Long, Arr As Variant, Optional Message As String = "")
+Public Sub AssertArraySize(Size As Long, Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Equal_(Size, UBound(Arr) + 1), Message:=Message, AssertName:="AssertArraySize", _
-        AssertFailMessage:="Got " & Size & " <> " & ToSafeArraySize(Arr)
+        AssertFailMessage:="Got " & Size & " <> " & ToSafeArraySize(Arr), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert array is of the correct size
-Public Sub AssertEmptyArray(Arr As Variant, Optional Message As String = "")
+Public Sub AssertEmptyArray(Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Equal_(-1, UBound(Arr)), Message:=Message, AssertName:="AssertEmptyArray", _
-        AssertFailMessage:="Got " & ToSafeArraySize(Arr)
+        AssertFailMessage:="Got " & ToSafeArraySize(Arr), _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Assert array elements are equal
-Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "")
+'# An composite assertion, this checks array size and values
+Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+On Error GoTo ErrHandler:
+    Const PARENT_NAME As String = "AssertEqualArrays"
     Dim Tuple As Variant, ArrSize As Long
     If IsEmpty(LeftArr) Or IsEmpty(RightArr) Then
-        AssertEqual LeftArr, RightArr, Message:=Message
+        AssertEqual LeftArr, RightArr, Message:=Message, AssertParentName:=PARENT_NAME
         Exit Sub
     End If
-    ArrSize = UBound(LeftArr) + 1
     
-    AssertArraySize UBound(LeftArr) + 1, RightArr, Message:=Message
-    For Each Tuple In VaseLib.Zip(LeftArr, RightArr)
-        AssertEqual Tuple(0), Tuple(1), Message:=Message
+    Dim LeftSize As Long, RightSize As Long
+    LeftSize = UBound(LeftArr) - LBound(LeftArr)
+    RightSize = UBound(RightArr) - LBound(RightArr)
+    AssertEqual LeftSize, RightSize, Message:=Message, AssertParentName:=PARENT_NAME
+    If LeftSize <> RightSize Then Exit Sub
+    
+    Dim LeftIndex As Long, RightIndex As Long, Index As Long
+    LeftIndex = LBound(LeftArr)
+    RightIndex = LBound(RightArr)
+    For Index = 0 To LeftSize
+        AssertEqual LeftArr(LeftIndex + Index), RightArr(RightIndex + Index), Message:=Message, AssertParentName:=AssertParentName
     Next
+ErrHandler:
+    AssertErrorNotRaised Message:=Message, AssertParentName:=AssertParentName
+    Err.Clear
+End Sub
+
+'# Assert error is not raised
+Public Sub AssertErrorNotRaised(Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Err.Number <> 0, Message:=Message, AssertName:="AssertEmptyArray", _
+        AssertFailMessage:="Got Error# " & Err.Number, _
+        AssertParentName:=AssertParentName
 End Sub
 
 '# Outputs a value to string to a test worthy output
