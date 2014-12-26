@@ -10,3 +10,12 @@ Public Sub TestSoloExecutionFailed()
     
     VaseAssert.Ping_
 End Sub
+
+Public Sub TestArrayEquals()
+    Dim Arr1 As Variant, Arr2 As Variant
+    Arr1 = Array(1, 2, 3)
+    Arr2 = Arr1
+    
+    VaseAssert.AssertEqualArrays Arr1, Arr2
+
+End Sub

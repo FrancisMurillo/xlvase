@@ -200,7 +200,7 @@ End Sub
 
 '# Assert array elements are equal
 '# An composite assertion, this checks array size and values
-Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "")
 On Error GoTo ErrHandler:
     Const PARENT_NAME As String = "AssertEqualArrays"
     Dim Tuple As Variant, ArrSize As Long
@@ -219,16 +219,16 @@ On Error GoTo ErrHandler:
     LeftIndex = LBound(LeftArr)
     RightIndex = LBound(RightArr)
     For Index = 0 To LeftSize
-        AssertEqual LeftArr(LeftIndex + Index), RightArr(RightIndex + Index), Message:=Message, AssertParentName:=AssertParentName
+        AssertEqual LeftArr(LeftIndex + Index), RightArr(RightIndex + Index), Message:=Message, AssertParentName:=PARENT_NAME
     Next
 ErrHandler:
-    AssertErrorNotRaised Message:=Message, AssertParentName:=AssertParentName
+    AssertErrorNotRaised Message:=Message, AssertParentName:=PARENT_NAME
     Err.Clear
 End Sub
 
 '# Assert error is not raised
 Public Sub AssertErrorNotRaised(Optional Message As String = "", Optional AssertParentName As String = "")
-    Assert_ Err.Number <> 0, Message:=Message, AssertName:="AssertEmptyArray", _
+    Assert_ Err.Number = 0, Message:=Message, AssertName:="AssertEmptyArray", _
         AssertFailMessage:="Got Error# " & Err.Number, _
         AssertParentName:=AssertParentName
 End Sub
