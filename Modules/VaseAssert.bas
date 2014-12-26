@@ -186,7 +186,7 @@ End Sub
 
 '# Assert array is of the correct size
 Public Sub AssertArraySize(Size As Long, Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
-    Assert_ Equal_(Size, UBound(Arr) + 1), Message:=Message, AssertName:="AssertArraySize", _
+    Assert_ Equal_(Size, UBound(Arr) - LBound(Arr) + 1), Message:=Message, AssertName:="AssertArraySize", _
         AssertFailMessage:="Got " & Size & " <> " & ToSafeArraySize(Arr), _
         AssertParentName:=AssertParentName
 End Sub
@@ -200,29 +200,28 @@ End Sub
 
 '# Assert array elements are equal
 '# An composite assertion, this checks array size and values
-Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "")
+Public Sub AssertArraysEqual(LeftArr As Variant, RightArr As Variant, Optional Message As String = "", Optional AssertParentName As String = "AssertEqualArrays")
 On Error GoTo ErrHandler:
-    Const PARENT_NAME As String = "AssertEqualArrays"
     Dim Tuple As Variant, ArrSize As Long
     If IsEmpty(LeftArr) Or IsEmpty(RightArr) Then
-        AssertEqual LeftArr, RightArr, Message:=Message, AssertParentName:=PARENT_NAME
+        AssertEqual LeftArr, RightArr, Message:=Message, AssertParentName:=AssertParentName
         Exit Sub
     End If
     
     Dim LeftSize As Long, RightSize As Long
     LeftSize = UBound(LeftArr) - LBound(LeftArr)
     RightSize = UBound(RightArr) - LBound(RightArr)
-    AssertEqual LeftSize, RightSize, Message:=Message, AssertParentName:=PARENT_NAME
+    AssertEqual LeftSize, RightSize, Message:=Message, AssertParentName:=AssertParentName
     If LeftSize <> RightSize Then Exit Sub
     
     Dim LeftIndex As Long, RightIndex As Long, Index As Long
     LeftIndex = LBound(LeftArr)
     RightIndex = LBound(RightArr)
     For Index = 0 To LeftSize
-        AssertEqual LeftArr(LeftIndex + Index), RightArr(RightIndex + Index), Message:=Message, AssertParentName:=PARENT_NAME
+        AssertEqual LeftArr(LeftIndex + Index), RightArr(RightIndex + Index), Message:=Message, AssertParentName:=AssertParentName
     Next
 ErrHandler:
-    AssertErrorNotRaised Message:=Message, AssertParentName:=PARENT_NAME
+    AssertErrorNotRaised Message:=Message, AssertParentName:=AssertParentName
     Err.Clear
 End Sub
 
