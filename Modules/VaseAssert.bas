@@ -159,6 +159,10 @@ End Sub
 '# Assert array elements are equal
 Public Sub AssertEqualArrays(LeftArr As Variant, RightArr As Variant, Optional Message As String = "")
     Dim Tuple As Variant, ArrSize As Long
+    If IsEmpty(LeftArr) Or IsEmpty(RightArr) Then
+        AssertEqual LeftArr, RightArr, Message:=Message
+        Exit Sub
+    End If
     ArrSize = UBound(LeftArr) + 1
     
     AssertArraySize UBound(LeftArr) + 1, RightArr, Message:=Message
