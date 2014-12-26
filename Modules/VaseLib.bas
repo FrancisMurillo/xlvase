@@ -216,12 +216,17 @@ Public Function Zip(LeftArr As Variant, RightArr As Variant) As Variant
         Exit Function
     End If
     
-    Dim ZipArr As Variant, Index As Integer
+    Dim ZipArr As Variant, Index As Long
+    Dim LeftSize As Long, RightSize As Long
+    LeftSize = UBound(LeftArr) - LBound(LeftArr)
+    RightSize = UBound(RightArr) - LBound(RightArr)
+    
     ZipArr = Array()
-    ReDim ZipArr(0 To IIf(UBound(LeftArr) > UBound(RightArr), UBound(RightArr), UBound(LeftArr))) ' Take minimum of the two
+    ReDim ZipArr(0 To IIf(LeftSize > RightSize, RightSize, LeftSize))
+                            
 
     For Index = 0 To UBound(ZipArr)
-        ZipArr(Index) = Array(LeftArr(Index), RightArr(Index))
+        ZipArr(Index) = Array(LeftArr(LBound(LeftArr) + Index), RightArr(LBound(RightArr) + Index))
     Next
     Zip = ZipArr
 End Function
