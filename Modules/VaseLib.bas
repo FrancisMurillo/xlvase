@@ -3,7 +3,7 @@ Attribute VB_Name = "VaseLib"
 '--- Constants       ---
 '=======================
 Public Const METHOD_HEADER_PATTERN As String = _
-    "Sub " & VaseConfig.TEST_METHOD_PATTERN
+    "* Sub " & VaseConfig.TEST_METHOD_PATTERN
 
 '=======================
 '- Internal Functions  -
