@@ -232,6 +232,27 @@ Public Sub AssertErrorNotRaised(Optional Message As String = "", Optional Assert
         AssertParentName:=AssertParentName
 End Sub
 
+'# Assert two variables are is thee same
+Public Sub AssertIs(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Is_(LeftVal, RightVal), Message:=Message, AssertName:="AssertIs", _
+        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " <> " & ToSafeString(RightVal), _
+        AssertParentName:=AssertParentName
+End Sub
+
+'# Assert two variables are equal
+Public Sub AssertIsNothing(Val As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Is_(Val, Nothing), Message:=Message, AssertName:="AssertIsNothing", _
+        AssertFailMessage:="Got " & ToSafeString(Val) & " Is Something", _
+        AssertParentName:=AssertParentName
+End Sub
+
+'# Assert two variables are equal
+Public Sub AssertIsNotNothing(Val As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Not Is_(Val, Nothing), Message:=Message, AssertName:="AssertIsNotNothing", _
+        AssertFailMessage:="Got " & ToSafeString(Val) & " Is Nothing", _
+        AssertParentName:=AssertParentName
+End Sub
+
 '# Outputs a value to string to a test worthy output
 '! Assumes Val is not an object
 Private Function ToSafeString(Val As Variant) As String
@@ -313,4 +334,15 @@ On Error Resume Next
     GreaterThanOrEqual_ = (LeftVal >= RightVal) ' Mutates the error state if an error occurs here
     If PreClear Then Err.Clear ' If there was an previous error, do not clear it
 End Function
+
+Private Function Is_(LeftObj As Variant, RightObj As Variant) As Boolean
+    Dim PreClear As Boolean
+    PreClear = (Err.Number = 0) ' Save the default error state
+On Error Resume Next
+    Is_ = False
+    Is_ = (LeftVal Is RightVal)
+    If PreClear Then Err.Clear ' If there was an previous error, do not clear it
+End Function
+
+
 
