@@ -31,7 +31,7 @@ On Error Resume Next
     TMethods = VaseLib.FindTestMethods(TMod)
     
     ExpectedMethods = Array("TestAddition", "TestSubtraction")
-    VaseAssert.AssertEqualArrays ExpectedMethods, TMethods
+    VaseAssert.AssertArraysEqual ExpectedMethods, TMethods
 End Sub
 
 Public Sub TestRunTestCase()

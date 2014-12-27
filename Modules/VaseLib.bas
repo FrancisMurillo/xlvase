@@ -32,7 +32,14 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
     TestModuleCount = 0
     TestModuleSuccessCount = 0
     
+    
+    ' Profiling mark here
+    Dim TestSuiteStartTime As Double, TestModuleStartTime As Double, TestMethodStartTime As Double
+    Dim TestTimeStr As String ' Temp variable to help with outputting
+    TestSuiteStartTime = Timer
     For Each TModule In TModules
+        TestModuleStartTime = Timer ' Profiling module start
+        
         If Verbose Then Debug.Print "* " & TModule.Name
         If Verbose Then Debug.Print "=============="
         TestMethodLocalPassCount = 0
@@ -47,13 +54,16 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
         
         For Each TMethod In TMethods
             VaseAssert.InitAssert
-                        
+            
+            TestMethodStartTime = Timer ' Profiling method start
             TestResult = RunTestMethod(VaseBook.Name, TModule.Name, CStr(TMethod))
+            TestTimeStr = "(" & CStr(Timer - TestMethodStartTime) & ")"
+            
             If TestResult(0) Then
-                If Verbose Then Debug.Print vbTab & "+ " & TMethod
+                If Verbose Then Debug.Print vbTab & "+ " & TMethod & TestTimeStr
                 TestMethodLocalPassCount = TestMethodLocalPassCount + 1
             Else
-                If Verbose Then Debug.Print vbTab & "- " & TMethod & TestResult(1)
+                If Verbose Then Debug.Print vbTab & "- " & TMethod & TestTimeStr & TestResult(1)
                 TestMethodFailedCol.Add TModule.Name & "." & TMethod
             End If
         Next
@@ -62,6 +72,9 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
         If RunTeardownMethod(VaseBook.Name, TModule.Name) Then
             If Verbose Then Debug.Print "Teardown method executed"
         End If
+        
+        ' Profile here
+        TestTimeStr = CStr(Timer - TestModuleStartTime)
         
         TestMethodLocalTotalCount = UBound(TMethods) + 1
         TestMethodCount = TestMethodCount + TestMethodLocalTotalCount
@@ -74,16 +87,17 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
             TestModuleSuccessCount = TestModuleSuccessCount + 1
         ElseIf TestMethodLocalPassCount = TestMethodLocalTotalCount Then
             If Verbose Then Debug.Print "*+ Total: " & CStr(TestMethodLocalTotalCount)
+            If Verbose Then Debug.Print "** Time: " & TestTimeStr
             TestModuleSuccessCount = TestModuleSuccessCount + 1
         Else
             If Verbose Then Debug.Print "*+ Total: " & CStr(TestMethodLocalTotalCount) & _
                                 " / Passed: " & TestMethodLocalPassCount & _
                                 " / Failed: " & (TestMethodLocalTotalCount - TestMethodLocalPassCount)
+            If Verbose Then Debug.Print "** Time: " & TestTimeStr
         End If
         
         If Verbose Then Debug.Print "" ' Emptyline
     Next
-    
     TestMethodFailedArr = ToArray(TestMethodFailedCol)
     If Verbose And TestModuleCount > 0 Then Debug.Print "--------------"  ' Dashes if there was an test method run
     If TestModuleCount = 0 Then
@@ -92,11 +106,13 @@ Public Function RunVaseSuite(VaseBook As Workbook, _
     ElseIf TestModuleCount = TestModuleSuccessCount Then
         If Verbose Then Debug.Print _
             "+ Modules: " & CStr(TestModuleCount) & " / Methods: " & CStr(TestMethodCount)
+        If Verbose Then Debug.Print "Test Execution Time: " & CStr(Timer - TestSuiteStartTime)
     Else
         If Verbose Then Debug.Print _
             "- Modules: " & CStr(TestModuleCount) & " / Passed: " & CStr(TestModuleSuccessCount) & " / Failed: " & CStr(TestModuleCount - TestModuleSuccessCount) & vbCrLf & _
             "- Methods: " & CStr(TestMethodCount) & " / Passed: " & CStr(TestMethodSuccessCount) & " / Failed: " & CStr(TestMethodCount - TestMethodSuccessCount) & vbCrLf & vbCrLf & _
             "Failed Methods:" & vbCrLf & Join_(TestMethodFailedArr, vbCrLf, Prefix:="* ") & vbCrLf
+        If Verbose Then Debug.Print "Test Execution Time: " & CStr(Timer - TestSuiteStartTime)
     End If
     
     Dim Tuple As Variant
@@ -185,7 +201,7 @@ ErrHandler:
     Dim HasError As Boolean, Tuple As Variant
     HasError = (Err.Number <> 0)
     If HasError Then
-        Tuple = Array(False, vbCrLf & vbTab & "ExceptionRaised(" & Err.Number & "):  " & Err.Description)
+        Tuple = Array(False, vbCrLf & vbTab & "-> ExceptionRaised(" & Err.Number & "):  " & Err.Description)
     Else
         Dim ErrorMessage As String
         If VaseAssert.FirstFailedTestParentMethod = "" Then

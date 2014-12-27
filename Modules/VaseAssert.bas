@@ -6,7 +6,9 @@ Private gFirstFailedMessage As String
 Private gFirstFailedAssertMessage As String
 Private gFirstFailedParent As String
 
+
 Private gTestCaseStarted As Boolean ' Defaults to False
+Private gTestCaseStartTime As Double
 
 Public Property Get TestResult() As Boolean
     TestResult = gAssertion
@@ -46,7 +48,11 @@ Private Sub Assert_(Cond As Boolean, _
     If Not Vase.IsRunningTest Then ' Allow output for solo execution
         If Not gTestCaseStarted Then
             VaseLib.ClearScreen
+            
+            gTestCaseStartTime = Timer
+            
             Debug.Print "Test Case Started"
+            Debug.Print "Timing start"
             Debug.Print "---------------------"
             
             InitAssert
@@ -105,6 +111,7 @@ Public Sub Ping_()
     If Not Vase.IsRunningTest Then
         Debug.Print ""
         Debug.Print "Test Execution: " & IIf(gAssertion, "Passed", "Failed")
+        Debug.Print "Test Time: " & CStr(Timer - gTestCaseStartTime)
         If Not gAssertion Then
             Debug.Print "First Failed On: " & vbCrLf & "- " & gFirstFailed & " >> " & gFirstFailedAssertMessage & _
                 IIf(gFirstFailedMessage <> "", " >> " & gFirstFailedMessage, "")
@@ -233,23 +240,23 @@ Public Sub AssertErrorNotRaised(Optional Message As String = "", Optional Assert
 End Sub
 
 '# Assert two variables are is thee same
-Public Sub AssertIs(LeftVal As Variant, RightVal As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
-    Assert_ Is_(LeftVal, RightVal), Message:=Message, AssertName:="AssertIs", _
-        AssertFailMessage:="Got " & ToSafeString(LeftVal) & " <> " & ToSafeString(RightVal), _
+Public Sub AssertIs(LeftObj As Object, RightObj As Object, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Is_(LeftObj, RightObj), Message:=Message, AssertName:="AssertIs", _
+        AssertFailMessage:="Got " & ToSafeObjectString(LeftObj) & " <> " & ToSafeObjectString(RightObj), _
         AssertParentName:=AssertParentName
 End Sub
 
 '# Assert two variables are equal
-Public Sub AssertIsNothing(Val As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
-    Assert_ Is_(Val, Nothing), Message:=Message, AssertName:="AssertIsNothing", _
-        AssertFailMessage:="Got " & ToSafeString(Val) & " Is Something", _
+Public Sub AssertIsNothing(Obj As Object, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Is_(Obj, Nothing), Message:=Message, AssertName:="AssertIsNothing", _
+        AssertFailMessage:="Got " & ToSafeObjectString(Obj) & " Is Not <<NOTHING>>", _
         AssertParentName:=AssertParentName
 End Sub
 
 '# Assert two variables are equal
-Public Sub AssertIsNotNothing(Val As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
-    Assert_ Not Is_(Val, Nothing), Message:=Message, AssertName:="AssertIsNotNothing", _
-        AssertFailMessage:="Got " & ToSafeString(Val) & " Is Nothing", _
+Public Sub AssertIsNotNothing(Obj As Object, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Not Is_(Obj, Nothing), Message:=Message, AssertName:="AssertIsNotNothing", _
+        AssertFailMessage:="Got " & ToSafeObjectString(Obj) & " Is <<NOTHING>>", _
         AssertParentName:=AssertParentName
 End Sub
 
@@ -270,6 +277,21 @@ On Error Resume Next
     If Err.Number <> 0 Then ToSafeString = "<<OBJECT>>"
     Err.Clear
 End Function
+
+'# Outputs a value to string to a test worthy output
+'! Assumes Val is not an object
+Private Function ToSafeObjectString(Val As Object) As String
+On Error Resume Next
+    If Val Is Nothing Then
+        ToSafeObjectString = "<<NOTHING>>"
+    Else
+        ToSafeObjectString = "<<OBJECT>>"
+    End If
+    
+    If Err.Number <> 0 Then ToSafeObjectString = "<<OBJECT>>"
+    Err.Clear
+End Function
+
 
 '# Gets the size of an array without the hastle of error checking
 Private Function ToSafeArraySize(Arr As Variant) As Long
@@ -335,14 +357,16 @@ On Error Resume Next
     If PreClear Then Err.Clear ' If there was an previous error, do not clear it
 End Function
 
-Private Function Is_(LeftObj As Variant, RightObj As Variant) As Boolean
+Private Function Is_(LeftObj As Object, RightObj As Object) As Boolean
     Dim PreClear As Boolean
     PreClear = (Err.Number = 0) ' Save the default error state
 On Error Resume Next
     Is_ = False
-    Is_ = (LeftVal Is RightVal)
+    Is_ = (LeftObj Is RightObj)
     If PreClear Then Err.Clear ' If there was an previous error, do not clear it
 End Function
+
+
 
 
 

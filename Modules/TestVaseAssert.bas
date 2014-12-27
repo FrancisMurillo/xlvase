@@ -16,7 +16,7 @@ Public Sub TestArrayEquals()
     Arr1 = Array(1, 2, 3)
     Arr2 = Arr1
     
-    VaseAssert.AssertEqualArrays Arr1, Arr2
+    VaseAssert.AssertArraysEqual Arr1, Arr2
     
     Arr3 = Array(1, 2)
     
