@@ -10,14 +10,14 @@ This executes every module that has the prefix *Test* and every method of with *
 **To God I plant these seed, may it turn into a forest**
 
 quick start
-====
+-----------
 
-This is a <a href="https://github.com/FrancisMurillo/chip">chip</a> project, so you can download this via *Chip.ChipOnFromRepo "Vase"* or if you want to install it via importing module. Just import these four modules in your project.
+This is a <a href="https://github.com/FrancisMurillo/xlchip">chip</a> project, so you can download this via *Chip.ChipOnFromRepo "Vase"* or if you want to install it via importing module. Just import these four modules in your project.
 
-1. <a href="https://raw.githubusercontent.com/FrancisMurillo/vase/master/Modules/Vase.bas">Vase.bas</a>
-2. <a href="https://raw.githubusercontent.com/FrancisMurillo/vase/master/Modules/VaseLib.bas">VaseLib.bas</a>
-3. <a href="https://raw.githubusercontent.com/FrancisMurillo/vase/master/Modules/VaseAssert.bas">VaseAssert.bas</a>
-4. <a href="https://raw.githubusercontent.com/FrancisMurillo/vase/master/Modules/VaseConfig.bas">VaseConfig.bas</a>
+1. <a href="https://raw.githubusercontent.com/FrancisMurillo/xlvase/master/Modules/Vase.bas">Vase.bas</a>
+2. <a href="https://raw.githubusercontent.com/FrancisMurillo/xlvase/master/Modules/VaseLib.bas">VaseLib.bas</a>
+3. <a href="https://raw.githubusercontent.com/FrancisMurillo/xlvase/master/Modules/VaseAssert.bas">VaseAssert.bas</a>
+4. <a href="https://raw.githubusercontent.com/FrancisMurillo/xlvase/master/Modules/VaseConfig.bas">VaseConfig.bas</a>
 
 And include in your project references the following.
 
@@ -43,12 +43,12 @@ End Sub
 Now if you run the test suite again, you should see output indicating a successful test run.
 
 test discovery
-====
+--------------
 
 Like **Nose** and the description above, this executes modules with the prefix *Test* and its methods with the prefix *Test*. 
 
 test execution
-====
+--------------
 
 There are some guidelines or things you should remember when creating a test method.
 
@@ -76,7 +76,7 @@ End Sub
 ```
 
 solo test execution
-====
+-------------------
 
 If you'd like to execute test methods solo, like using F5 with the cursor on it. The assertion methods will give an output as well provided you use *Rewind_* and *Ping_*  at the beginning and at the end. These methods do not affect test suite in general, these are just utility methods to make running test cases one at a time work. 
 
@@ -100,7 +100,7 @@ End Sub
 If you run the above, you can see a similar report like with the actual test suite. This is great if you know which test cases have failed in the suite and want to check each one.
 
 assertion methods
-====
+-----------------
 
 These are the currently available *VaseAssert.bas*. All of the methods take an optional parameter called *Message* where if the assertion fails, it shows that message as well. For the most part, the built-in assert failure message should be enough to where the test failed. 
 
@@ -116,7 +116,7 @@ These are the currently available *VaseAssert.bas*. All of the methods take an o
  
 
 what's next
-====
+-----------
 
 There are some things that can be done to improve this.
 
