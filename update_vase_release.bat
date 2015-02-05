@@ -1,1 +1,1 @@
-COPY /Y ..\vase.xlsm .\vase-RELEASE.xlsm
+COPY /Y ..\xlvase.xlsm .\xlvase-RELEASE.xlsm

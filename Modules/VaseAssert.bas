@@ -87,7 +87,21 @@ Private Sub Assert_(Cond As Boolean, _
     End If
 End Sub
 
-Private Sub Fail_(Optional Message As String = "", _
+Public Sub Pass_(Optional Message As String = "", _
+        Optional AssertName As String = "Assert", _
+        Optional AssertFailMessage As String = "Assert Failed", _
+        Optional AssertParentName As String = "", _
+        Optional Params As Variant = Empty)
+    Assert_ True, _
+        Message:=Message, _
+        AssertName:=AssertName, _
+        AssertFailMessage:=AssertFailMessage, _
+        AssertParentName:=AssertParentName, _
+        Params:=Params
+End Sub
+
+
+Public Sub Fail_(Optional Message As String = "", _
         Optional AssertName As String = "Assert", _
         Optional AssertFailMessage As String = "Assert Failed", _
         Optional AssertParentName As String = "", _
@@ -198,9 +212,16 @@ Public Sub AssertArraySize(Size As Long, Arr As Variant, Optional Message As Str
         AssertParentName:=AssertParentName
 End Sub
 
-'# Assert array is of the correct size
+'# Assert array is empty
 Public Sub AssertEmptyArray(Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
     Assert_ Equal_(-1, UBound(Arr)), Message:=Message, AssertName:="AssertEmptyArray", _
+        AssertFailMessage:="Got " & ToSafeArraySize(Arr), _
+        AssertParentName:=AssertParentName
+End Sub
+
+'# Assert array is not empty
+Public Sub AssertArrayNotEmpty(Arr As Variant, Optional Message As String = "", Optional AssertParentName As String = "")
+    Assert_ Not Equal_(-1, UBound(Arr)), Message:=Message, AssertName:="AssertEmptyArray", _
         AssertFailMessage:="Got " & ToSafeArraySize(Arr), _
         AssertParentName:=AssertParentName
 End Sub
@@ -365,6 +386,8 @@ On Error Resume Next
     Is_ = (LeftObj Is RightObj)
     If PreClear Then Err.Clear ' If there was an previous error, do not clear it
 End Function
+
+
 
 
 
